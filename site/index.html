@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Epoch Converter</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; color: #1b1f24; }
+  h1 { font-size: 1.5rem; }
+  label { display: block; margin-top: 1rem; font-weight: 600; }
+  input { width: 100%; padding: .5rem; font-size: 1rem; box-sizing: border-box; }
+  output { display: block; margin-top: .5rem; padding: .5rem; background: #f3f4f6; border-radius: 4px; white-space: pre-wrap; font-family: ui-monospace, monospace; }
+  button { margin-top: .5rem; padding: .4rem .8rem; }
+  footer { margin-top: 2rem; font-size: .85rem; color: #57606a; }
+</style>
+</head>
+<body>
+<h1>Unix epoch converter</h1>
+<p>Convert between Unix timestamps (seconds or milliseconds) and dates. Everything runs in your browser.</p>
+
+<label for="epoch">Unix timestamp</label>
+<input id="epoch" inputmode="numeric" placeholder="e.g. 1791374400">
+<output id="fromEpoch"></output>
+<button id="now" type="button">Use current time</button>
+
+<label for="date">Date and time (ISO 8601, e.g. 2026-10-07T12:00:00Z)</label>
+<input id="date" placeholder="2026-10-07T12:00:00Z">
+<output id="fromDate"></output>
+
+<footer>Static page, no external scripts, no cookies.</footer>
+<script>
+  const $ = (id) => document.getElementById(id)
+  function showEpoch() {
+    const raw = $('epoch').value.trim()
+    if (!raw) { $('fromEpoch').textContent = ''; return }
+    if (!/^-?\d+$/.test(raw)) { $('fromEpoch').textContent = 'Not a whole number.'; return }
+    let n = Number(raw)
+    const unit = Math.abs(n) >= 1e12 ? 'milliseconds' : 'seconds'
+    const ms = unit === 'seconds' ? n * 1000 : n
+    const d = new Date(ms)
+    if (isNaN(d.getTime())) { $('fromEpoch').textContent = 'Out of range.'; return }
+    $('fromEpoch').textContent = 'Read as ' + unit + '\nUTC:   ' + d.toISOString() + '\nLocal: ' + d.toString()
+  }
+  function showDate() {
+    const raw = $('date').value.trim()
+    if (!raw) { $('fromDate').textContent = ''; return }
+    const t = Date.parse(raw)
+    if (isNaN(t)) { $('fromDate').textContent = 'Could not parse that date.'; return }
+    $('fromDate').textContent = 'Seconds:      ' + Math.floor(t / 1000) + '\nMilliseconds: ' + t
+  }
+  $('epoch').addEventListener('input', showEpoch)
+  $('date').addEventListener('input', showDate)
+  $('now').addEventListener('click', () => { $('epoch').value = String(Math.floor(Date.now() / 1000)); showEpoch() })
+</script>
+</body>
+</html>
